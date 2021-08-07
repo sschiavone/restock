@@ -9,27 +9,11 @@ class Stock:
             access_token='EAAAEFv7_mfYuGUqCp8zYFqPQb5nPULMjLd7tNZa0qW4KgmN3oItAj-mrB1T25YR',
             environment='sandbox')
 
-    def get_sku(self, item_list):
-        sku_list = []
-        for item in item_list:
-            sku_list.append(item['item_variation_data']['sku'])
-          
-        return sku_list
-
-    def check_item_stock(self, item, min_stock):
-        data = item['item_variation_data']
+    def check_item_stock(self, item):
         stock = self.client.inventory.retrieve_inventory_count(item['id'])
     
         if stock.is_success():
-            try:
-                quantity = stock.body['counts'][0]['quantity']
-    
-                if int(quantity) <= min_stock:
-                    return True
-                else:
-                    return False
-            except:
-                return False
+            return  int(stock.body['counts'][0]['quantity'])
 
     def get_low_stock(self, category_id, min_stock):
         catalog = self.client.catalog.list_catalog(types='ITEM')
@@ -41,11 +25,13 @@ class Stock:
                 try:
                     if item_data['category_id'] == cat_print:
                         for item in item_data['variations']:
-                            if self.check_item_stock(item, min_stock):
-                                restock_list.append(item)
+                            stock = self.check_item_stock(item)
+                            if stock < min_stock:
+                                sku = item['item_variation_data']['sku']
+                                restock_list.append([sku, (min_stock-stock)])
                 except:
                     pass
-            return self.get_sku(restock_list)
+            return restock_list
 
         elif catalog.is_error():
             print(catalog.errors)
@@ -53,9 +39,7 @@ class Stock:
 
 stock = Stock()
 
-low_stock = stock.get_low_stock(cat_print, 1)
-
-#lowStock = get_sku(get_low_stock())
+low_stock = stock.get_low_stock(cat_print, 3)
 
 print(low_stock)
 
