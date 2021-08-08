@@ -1,7 +1,19 @@
 import os
 from square.client import Client
+
+PRINT = True
+
+art_path  = 'C:/Users/Scott/Desktop/Art/Prints/'
+list_path = 'C:/Users/Scott/Desktop/Scotts_Stuff/code/python/restock/8x10list.txt'
     
 cat_print = '2VPZMNWFHYKEFVPM4L5EX6VW'
+sizes = {'1) Print 5x7': '5x7',
+        '2) Print 8x10': '8x10',
+        '3) Print 11x14': '11x14'}
+
+paper_sizes = {'5x7': 123, '8x10': 125}
+                
+
 
 class Stock:
     def __init__(self):
@@ -19,19 +31,21 @@ class Stock:
         catalog = self.client.catalog.list_catalog(types='ITEM')
 
         if catalog.is_success():
-            restock_list = []
+            restock = {'5x7':[], '8x10':[], '11x14':[]}
             for catalog_item in catalog.body['objects']:
                 item_data = catalog_item['item_data']
                 try:
-                    if item_data['category_id'] == cat_print:
+                    if item_data['category_id'] == category_id:
+                        name = sizes[item_data['name']]
                         for item in item_data['variations']:
                             stock = self.check_item_stock(item)
                             if stock < min_stock:
                                 sku = item['item_variation_data']['sku']
-                                restock_list.append([sku, (min_stock-stock)])
+                                for i in range(min_stock-stock):
+                                    restock[name].append(sku)
                 except:
                     pass
-            return restock_list
+            return restock
 
         elif catalog.is_error():
             print(catalog.errors)
@@ -41,5 +55,10 @@ stock = Stock()
 
 low_stock = stock.get_low_stock(cat_print, 3)
 
-print(low_stock)
+if low_stock['8x10'] != 0:
+    with open('8x10list.txt', 'w') as f:
+        for item in low_stock['8x10']:
+            f.write(art_path + '8x10/TIFS/' + item + '.tif\n')
 
+if PRINT:
+    os.system('2Printer -prn Canon -src "@' + list_path +'" -props papersize:125 -options alerts:no')
