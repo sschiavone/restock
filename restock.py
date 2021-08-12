@@ -1,7 +1,10 @@
 import os
+import tkinter
+from tkinter import messagebox
 from square.client import Client
 
-PRINT = True
+
+PRINT = False 
 
 art_path  = 'C:/Users/Scott/Desktop/Art/Prints/'
 list_path = 'C:/Users/Scott/Desktop/Scotts_Stuff/code/python/restock/8x10list.txt'
@@ -50,6 +53,14 @@ class Stock:
         elif catalog.is_error():
             print(catalog.errors)
 
+top = tkinter.Tk()
+top.geometry('100x100')
+def printCallback():
+    msg = messagebox.showinfo('Print?', 'Do you want to print?')
+
+printButton = tkinter.Button(top, text = 'Print', command = printCallback)
+printButton.place(x=50, y=50)
+
 
 stock = Stock()
 
@@ -62,3 +73,5 @@ if low_stock['8x10'] != 0:
 
 if PRINT:
     os.system('2Printer -prn Canon -src "@' + list_path +'" -props papersize:125 -options alerts:no')
+
+top.mainloop()
