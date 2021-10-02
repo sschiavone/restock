@@ -1,9 +1,7 @@
 import os
-import tkinter as tk
-from tkinter import ttk
-from tkinter.messagebox import showinfo
+from tkinter import Tk, Button 
+from tkinter.ttk import Treeview 
 from square.client import Client
-
 
 PRINT = False 
 
@@ -18,31 +16,28 @@ sizes = {'1) Print 5x7': '5x7',
 paper_sizes = {'5x7': 123, '8x10': 125}
 
 
-class App(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.create_ui() 
+class App:
+    def __init__(self, master):
+        self.master = master
 
-
-    def create_ui(self):
         # configure the root window
-        self.title("Restock App")
-        self.geometry('620x500')
+        master.title("Restock App")
+        master.geometry('605x500')
         
-        # get stock button
-        self.button = ttk.Button(self, text='Get Stock')
-        self.button['command'] = self.stock_button_clicked
-        self.button.grid(row=0, column=0, columnspan=1, sticky='nsew')
+        # create the "Get Stock" button
+        self.stock_button = Button(master, text='Get Stock', width=1)
+        self.stock_button['command'] = self.stock_button_callback
+        self.stock_button.grid(row=0, column=0, sticky='nsew')
 
-        # print button
-        self.button = ttk.Button(self, text='Print')
-        self.button['command'] = self.print_button_clicked
-        self.button.grid(row=0, column=2, columnspan=1, sticky='nsew')
+        # create the "Print" button
+        self.print_button = Button(master, text='Print', width=1)
+        self.print_button['command'] = self.print_button_callback
+        self.print_button.grid(row=0, column=2, sticky='nsew')
 
         # table
         columns = ('#1', '#2', '#3')
 
-        self.tree = ttk.Treeview(self, columns=columns, show='headings')
+        self.tree = Treeview(master, columns=columns, show='headings', height=30)
 
         self.tree.heading('#1', text='Name')
         self.tree.heading('#2', text='SKU')
@@ -55,19 +50,19 @@ class App(tk.Tk):
         self.tree.grid(row=1, column=0, columnspan = 3, sticky='nsew')
 
 
-    def stock_button_clicked(self):
+    def stock_button_callback(self):
         stock = Stock()
         inventory = stock.get_inventory(cat_print)
         self.load_table(inventory)
 
 
-    def print_button_clicked(self):
+    def print_button_callback(self):
         pass
 
 
     def load_table(self, inventory):
         for item in inventory:
-            self.tree.insert('', tk.END, values=item)
+            self.tree.insert('', 'end', values=item)
 
 
 class Stock:
@@ -131,9 +126,6 @@ class Stock:
         elif catalog.is_error():
             print(catalog.errors)
 
-
-
-
 #stock = Stock()
 
 #low_stock = stock.get_low_stock(cat_print, 3)
@@ -151,5 +143,11 @@ class Stock:
 #top.mainloop()
 
 if __name__ == '__main__':
-    app = App()
-    app.mainloop()
+    #window = ThemedTk(theme='black')
+    root = Tk()
+    app = App(root)
+
+    #ttk.Button(window, text='Quit', command=window.destroy).pack()
+    root.mainloop()
+    #app = App()
+    #app.mainloop()
